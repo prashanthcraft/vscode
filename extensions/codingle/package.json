@@ -1,0 +1,385 @@
+{
+  "name": "codingle",
+  "license": "GPL-3.0-or-later",
+  "displayName": "codingle",
+  "publisher": "codingle",
+  "description": "Open-Source, Native and a True GitHub Copilot Alternative for VS Code",
+  "version": "0.0.1",
+  "icon": "assets/logo.png",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished",
+    "onFileSystem:web-fs",
+    "onLanguageModelChat:copilot",
+    "onUri",
+    "onStartupFinished"
+  ],
+  "browser": "./dist/browser/extension.js",
+  "main": "./out/extension.js",
+  "scripts": {
+    "test": "vscode-test-web --browserType=chromium --extensionDevelopmentPath=. --extensionTestsPath=dist/web/test/suite/index.js",
+    "pretest": "npm run compile-web",
+    "postinstall": "node ./build/postinstall.js",
+    "vscode:prepublish": "npm run package-web",
+    "compile-web": "webpack",
+    "watch-web": "webpack --watch",
+    "package-web": "webpack --mode production --devtool hidden-source-map",
+    "lint": "eslint src --ext ts",
+    "run-in-browser": "vscode-test-web --browserType=chromium --extensionDevelopmentPath=. ."
+  },
+  "devDependencies": {
+    "@types/assert": "^1.5.10",
+    "@types/diff": "^6.0.0",
+    "@types/jsdom": "^21.1.7",
+    "@types/markdown-it": "^14.1.2",
+    "@types/mocha": "^10.0.6",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "@types/turndown": "^5.0.5",
+    "@types/webpack-env": "^1.18.4",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "assert": "^2.1.0",
+    "eslint": "^8.56.0",
+    "json-loader": "^0.5.7",
+    "mocha": "^10.2.0",
+    "process": "^0.11.10",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.3.3",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "@ai-sdk/amazon-bedrock": "^1.0.8",
+    "@ai-sdk/anthropic": "^1.0.8",
+    "@ai-sdk/azure": "^1.0.18",
+    "@ai-sdk/cohere": "^1.0.8",
+    "@ai-sdk/google": "^1.0.12",
+    "@ai-sdk/groq": "^1.0.11",
+    "@ai-sdk/mistral": "^1.0.8",
+    "@ai-sdk/openai": "^1.0.11",
+    "@mixmark-io/domino": "^2.2.0",
+    "@mohankumarelec/openai-compatible": "^0.0.16",
+    "ai": "^4.0.23",
+    "buffer": "^6.0.3",
+    "diff": "^7.0.0",
+    "memfs": "^4.15.1",
+    "openai": "^4.77.0",
+    "os-browserify": "^0.3.0",
+    "path-browserify": "^1.0.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "readable-stream": "^4.6.0",
+    "turndown": "^7.2.0",
+    "turndown-plugin-gfm": "^1.0.2",
+    "url": "^0.11.4",
+    "util": "^0.12.5",
+    "uuid": "^11.0.3",
+    "zod": "^3.24.1"
+  },
+  "enabledApiProposals": [
+    "activeComment",
+    "aiRelatedInformation",
+    "aiTextSearchProvider",
+    "authLearnMore",
+    "authSession",
+    "canonicalUriProvider",
+    "chatEditing",
+    "chatParticipantAdditions",
+    "chatParticipantPrivate",
+    "chatProvider",
+    "chatReferenceBinaryData",
+    "chatTab",
+    "chatVariableResolver",
+    "codeActionAI",
+    "codeActionRanges",
+    "codiconDecoration",
+    "commentReactor",
+    "commentReveal",
+    "commentThreadApplicability",
+    "commentingRangeHint",
+    "commentsDraftState",
+    "contribAccessibilityHelpContent",
+    "contribCommentEditorActionsMenu",
+    "contribCommentPeekContext",
+    "contribCommentThreadAdditionalMenu",
+    "contribCommentsViewThreadMenus",
+    "contribDebugCreateConfiguration",
+    "contribDiffEditorGutterToolBarMenus",
+    "contribEditSessions",
+    "contribEditorContentMenu",
+    "contribLabelFormatterWorkspaceTooltip",
+    "contribMenuBarHome",
+    "contribMergeEditorMenus",
+    "contribMultiDiffEditorMenus",
+    "contribNotebookStaticPreloads",
+    "contribRemoteHelp",
+    "contribShareMenu",
+    "contribSourceControlHistoryItemMenu",
+    "contribSourceControlHistoryTitleMenu",
+    "contribSourceControlInputBoxMenu",
+    "contribSourceControlTitleMenu",
+    "contribStatusBarItems",
+    "contribViewContainerTitle",
+    "contribViewsRemote",
+    "contribViewsWelcome",
+    "createFileSystemWatcher",
+    "customEditorMove",
+    "debugVisualization",
+    "defaultChatParticipant",
+    "diffCommand",
+    "diffContentOptions",
+    "documentFiltersExclusive",
+    "documentPaste",
+    "editSessionIdentityProvider",
+    "editorHoverVerbosityLevel",
+    "editorInsets",
+    "embeddings",
+    "extensionRuntime",
+    "extensionsAny",
+    "externalUriOpener",
+    "fileSearchProvider",
+    "fileSearchProvider2",
+    "findFiles2",
+    "findTextInFiles",
+    "findTextInFiles2",
+    "fsChunks",
+    "idToken",
+    "inlineEdit",
+    "interactive",
+    "interactiveWindow",
+    "ipc",
+    "languageModelSystem",
+    "languageStatusText",
+    "mappedEditsProvider",
+    "multiDocumentHighlightProvider",
+    "nativeWindowHandle",
+    "newSymbolNamesProvider",
+    "notebookCellExecution",
+    "notebookCellExecutionState",
+    "notebookControllerAffinityHidden",
+    "notebookDeprecated",
+    "notebookExecution",
+    "notebookKernelSource",
+    "notebookLiveShare",
+    "notebookMessaging",
+    "notebookMime",
+    "notebookReplDocument",
+    "notebookVariableProvider",
+    "portsAttributes",
+    "profileContentHandlers",
+    "quickDiffProvider",
+    "quickInputButtonLocation",
+    "quickPickItemTooltip",
+    "quickPickSortByLabel",
+    "resolvers",
+    "scmActionButton",
+    "scmHistoryProvider",
+    "scmMultiDiffEditor",
+    "scmSelectedProvider",
+    "scmTextDocument",
+    "scmValidation",
+    "shareProvider",
+    "speech",
+    "tabInputMultiDiff",
+    "tabInputTextMerge",
+    "taskPresentationGroup",
+    "telemetry",
+    "terminalCompletionProvider",
+    "terminalDataWriteEvent",
+    "terminalDimensions",
+    "terminalExecuteCommandEvent",
+    "terminalQuickFixProvider",
+    "terminalSelection",
+    "testObserver",
+    "testRelatedCode",
+    "textEditorDiffInformation",
+    "textSearchComplete2",
+    "textSearchProvider",
+    "textSearchProvider2",
+    "timeline",
+    "tokenInformation",
+    "treeViewActiveItem",
+    "treeViewMarkdownMessage",
+    "treeViewReveal",
+    "tunnelFactory",
+    "tunnels",
+    "valueSelectionInQuickPick",
+    "workspaceTrust",
+    "fileComments",
+    "inlineCompletionsAdditions",
+    "showLocal"
+  ],
+  "contributes": {
+    "languageModels": {
+      "vendor": "copilot"
+    },
+    "menus": {
+      "scm/inputBox": [
+        {
+          "when": "scmProvider == git",
+          "command": "codingle.git.generateCommitMessage"
+        }
+      ]
+    },
+    "configuration": {
+      "type": "object",
+      "title": "Codingle",
+      "properties": {
+        "codingle.panelChat.showTokenUsage": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to show token usage in panel chat."
+        },
+        "codingle.inlineChat.showTokenUsage": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to show token usage in inline chat."
+        },
+        "codingle.editingSession.showTokenUsage": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to show token usage in editor."
+        },
+        "codingle.terminal.showTokenUsage": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to show token usage in terminal."
+        }
+      }
+    },
+    "chatParticipants": [
+      {
+        "id": "codingle.panel.default",
+        "name": "codingle",
+        "fullName": "Codingle",
+        "description": "Ask Codingle or type / for commands",
+        "isDefault": true,
+        "locations": [
+          "panel"
+        ]
+      },
+      {
+        "id": "codingle.editing.session",
+        "name": "codingle",
+        "fullName": "Codingle",
+        "description": "Edit files with Codingle",
+        "isDefault": true,
+        "locations": [
+          "editing-session"
+        ]
+      },
+      {
+        "id": "codingle.terminal.session",
+        "name": "codingle",
+        "fullName": "Codingle",
+        "description": "Craft commands in terminal",
+        "isDefault": true,
+        "locations": [
+          "terminal"
+        ]
+      },
+      {
+        "id": "codingle.editor.default",
+        "name": "codingle",
+        "fullName": "Codingle",
+        "description": "Ask Codingle or type / for commands",
+        "isDefault": true,
+        "locations": [
+          "editor"
+        ],
+        "defaultImplicitVariables": [
+          "_inlineChatContext",
+          "_inlineChatDocument"
+        ]
+      }
+    ],
+    "viewsWelcome": [
+      {
+        "view": "workbench.panel.chat.view.copilot",
+        "contents": "$(loading~spin) Please wait while Codingle is getting activated",
+        "when": "!codingle:isLoaded"
+      },
+      {
+        "view": "workbench.panel.chat.view.copilot",
+        "contents": "You are not connected to the internet, Please check your connection and try again.\n[Retry Connection](command:codingle.checkInternetConnection)",
+        "when": "codingle:isLoaded && !codingle:isNetworkConnected"
+      },
+      {
+        "view": "workbench.panel.chat.view.copilot",
+        "contents": "Connect your GitHub Account to use Codingle, your AI pair programmer.\n\nThis is just required to personalize the IDE with your GitHub profile and auto-configure GitHub models for free to use instantly.\n\n[Connet your GitHub Account](command:codingle.github.signin)",
+        "when": "codingle:isLoaded && codingle:isNetworkConnected && !codingle:isLoggedIn"
+      },
+      {
+        "view": "workbench.panel.chat.view.edits",
+        "contents": "$(loading~spin) Please wait while Codingle is getting activated",
+        "when": "!codingle:isLoaded"
+      },
+      {
+        "view": "workbench.panel.chat.view.edits",
+        "contents": "You are not connected to the internet, Please check your connection and try again.\n[Retry Connection](command:codingle.checkInternetConnection)",
+        "when": "codingle:isLoaded && !codingle:isNetworkConnected"
+      },
+      {
+        "view": "workbench.panel.chat.view.edits",
+        "contents": "Connect your GitHub Account to use Codingle, your AI pair programmer.\n\nThis is just required to personalize the IDE with your GitHub profile and auto-configure GitHub models for free to use instantly.\n\n[Connet your GitHub Account](command:codingle.github.signin)",
+        "when": "codingle:isLoaded && codingle:isNetworkConnected && !codingle:isLoggedIn"
+      }
+    ],
+    "commands": [
+      {
+        "command": "codingle.git.generateCommitMessage",
+        "title": "Generate Commit Message",
+        "icon": "$(sparkle)",
+        "enablement": "false",
+        "category": "Codingle"
+      },
+      {
+        "command": "codingle.checkInternetConnection",
+        "title": "Check Internet Connection",
+        "enablement": "false"
+      },
+      {
+        "command": "codingle.show.diagnostics",
+        "title": "Show Diagnostics",
+        "category": "Codingle"
+      },
+      {
+        "command": "codingle.vfs.info.message",
+        "enablement": "false",
+        "title": "Codingle VFS Info Message"
+      },
+      {
+        "command": "codingle.github.signin",
+        "title": "Sign In with GitHub"
+      },
+      {
+        "command": "codingle.configureModel",
+        "title": "Configure the Language Model Provider",
+        "category": "Codingle",
+        "enablement": "codingle:isLoggedIn"
+      },
+      {
+        "command": "codingle.usagePreferences",
+        "title": "Set Model Usage Preferences",
+        "category": "Codingle",
+        "enablement": "codingle:isLoggedIn"
+      },
+      {
+        "command": "codingle.viewLogs",
+        "category": "Codingle",
+        "title": "View logs from Codingle output channel"
+      },
+      {
+        "command": "codingle.status.icon.menu",
+        "enablement": "false",
+        "title": "Status Icon Menu"
+      }
+    ]
+  }
+}

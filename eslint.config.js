@@ -119,8 +119,8 @@ export default tseslint.config(
 				'block',
 				[
 					'---------------------------------------------------------------------------------------------',
-					' *  Copyright (c) Microsoft Corporation. All rights reserved.',
-					' *  Licensed under the MIT License. See License.txt in the project root for license information.',
+					{ 'pattern': ' Copyright \\(c\\) (Microsoft Corporation|Codingle AI). All rights reserved.' },
+					{ 'pattern': ' Licensed under the (MIT|GPL-3.0) License. See License.txt in the project root for license information.' },
 					' *--------------------------------------------------------------------------------------------'
 				]
 			]
@@ -129,7 +129,7 @@ export default tseslint.config(
 	// TS
 	{
 		files: [
-			'**/*.ts',
+			'**/*.ts', '**/*.tsx'
 		],
 		languageOptions: {
 			parser: tseslint.parser,

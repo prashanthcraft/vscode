@@ -323,6 +323,7 @@ const skippedExportMangledProjects = [
 	'microsoft-authentication',
 	'github-authentication',
 	'html-language-features/server',
+	'codingle'
 ];
 
 const skippedExportMangledSymbols = [

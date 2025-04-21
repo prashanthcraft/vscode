@@ -109,11 +109,12 @@ export class ChatAttachmentModel extends Disposable {
 		});
 	}
 
-	asVariableEntry(uri: URI, range?: IRange): IChatRequestVariableEntry {
+	asVariableEntry(uri: URI, range?: IRange, modelDescription?: string): IChatRequestVariableEntry {
 		return {
 			kind: 'file',
 			value: range ? { uri, range } : uri,
 			id: uri.toString() + (range?.toString() ?? ''),
+			modelDescription: modelDescription,
 			name: basename(uri),
 		};
 	}

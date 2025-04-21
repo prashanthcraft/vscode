@@ -32,15 +32,15 @@ function withNodeDefaults(/**@type WebpackConfig & { context: string }*/extConfi
 		resolve: {
 			conditionNames: ['import', 'require', 'node-addons', 'node'],
 			mainFields: ['module', 'main'],
-			extensions: ['.ts', '.js'], // support ts-files and js-files
+			extensions: ['.ts', '.tsx', '.js', '.jsx'], // support ts-files and js-files
 			extensionAlias: {
 				// this is needed to resolve dynamic imports that now require the .js extension
-				'.js': ['.js', '.ts'],
+				'.js': ['.ts', '.tsx', '.js', '.jsx'],
 			}
 		},
 		module: {
 			rules: [{
-				test: /\.ts$/,
+				test: /\.tsx?$/,
 				exclude: /node_modules/,
 				use: [{
 					// configure TypeScript loader:
@@ -92,7 +92,7 @@ function nodePlugins(context) {
 	return [
 		new CopyWebpackPlugin({
 			patterns: [
-				{ from: 'src', to: '.', globOptions: { ignore: ['**/test/**', '**/*.ts'] }, noErrorOnMissing: true }
+				{ from: 'src', to: '.', globOptions: { ignore: ['**/test/**', '**/*.ts', '**/*.tsx', '**/*.jsx'] }, noErrorOnMissing: true }
 			]
 		})
 	];
@@ -110,7 +110,7 @@ function withBrowserDefaults(/**@type WebpackConfig & { context: string }*/extCo
 		target: 'webworker', // extensions run in a webworker context
 		resolve: {
 			mainFields: ['browser', 'module', 'main'],
-			extensions: ['.ts', '.js'], // support ts-files and js-files
+			extensions: ['.ts', '.tsx', '.js', '.jsx'], // support ts-files and js-files
 			fallback: {
 				'path': require.resolve('path-browserify'),
 				'os': require.resolve('os-browserify'),
@@ -118,12 +118,12 @@ function withBrowserDefaults(/**@type WebpackConfig & { context: string }*/extCo
 			},
 			extensionAlias: {
 				// this is needed to resolve dynamic imports that now require the .js extension
-				'.js': ['.js', '.ts'],
+				'.js': ['.ts', '.tsx', '.js', '.jsx'],
 			},
 		},
 		module: {
 			rules: [{
-				test: /\.ts$/,
+				test: /\.tsx?$/,
 				exclude: /node_modules/,
 				use: [
 					{
@@ -189,7 +189,7 @@ function browserPlugins(context) {
 		}),
 		new CopyWebpackPlugin({
 			patterns: [
-				{ from: 'src', to: '.', globOptions: { ignore: ['**/test/**', '**/*.ts'] }, noErrorOnMissing: true }
+				{ from: 'src', to: '.', globOptions: { ignore: ['**/test/**', '**/*.ts', '**/*.tsx', '**/*.jsx'] }, noErrorOnMissing: true }
 			]
 		}),
 		new DefinePlugin({

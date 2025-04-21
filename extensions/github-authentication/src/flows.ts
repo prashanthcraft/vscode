@@ -284,7 +284,7 @@ const allFlows: IFlow[] = [
 			supportsHostedGitHubEnterprise: true,
 			supportsRemoteExtensionHost: true,
 			// CORS prevents this from working in web workers
-			supportsWebWorkerExtensionHost: false,
+			supportsWebWorkerExtensionHost: true,
 			supportsNoClientSecret: true,
 			supportsSupportedClients: true,
 			supportsUnsupportedClients: true
@@ -293,7 +293,11 @@ const allFlows: IFlow[] = [
 			logger.info(`Trying device code flow... (${scopes})`);
 
 			// Get initial device code
-			const uri = baseUri.with({
+			const proxyEndpoints: { [providerId: string]: string } | undefined = await commands.executeCommand('workbench.getCodeExchangeProxyEndpoints');
+			const proxyUri = proxyEndpoints?.github
+				? Uri.parse(`${proxyEndpoints.github}login/device/code`)
+				: baseUri.with({ path: '/login/device/code' });
+			const uri = proxyUri.with({
 				path: '/login/device/code',
 				query: `client_id=${Config.gitHubClientId}&scope=${scopes}`
 			});
@@ -345,7 +349,11 @@ const allFlows: IFlow[] = [
 					]
 				})
 			}, async (_, token) => {
-				const refreshTokenUri = baseUri.with({
+				const proxyEndpoints: { [providerId: string]: string } | undefined = await commands.executeCommand('workbench.getCodeExchangeProxyEndpoints');
+				const proxyUri = proxyEndpoints?.github
+					? Uri.parse(`${proxyEndpoints.github}login/oauth/access_token`)
+					: baseUri.with({ path: '/login/oauth/access_token' });
+				const refreshTokenUri = proxyUri.with({
 					path: '/login/oauth/access_token',
 					query: `client_id=${Config.gitHubClientId}&device_code=${json.device_code}&grant_type=urn:ietf:params:oauth:grant-type:device_code`
 				});
@@ -421,7 +429,12 @@ const allFlows: IFlow[] = [
 			}
 
 			const description = `${env.appName} (${scopes})`;
-			const uriToOpen = await env.asExternalUri(baseUri.with({ path: '/settings/tokens/new', query: `description=${description}&scopes=${scopes.split(' ').join(',')}` }));
+			const proxyEndpoints: { [providerId: string]: string } | undefined = await commands.executeCommand('workbench.getCodeExchangeProxyEndpoints');
+			const proxyUri = proxyEndpoints?.github
+				? Uri.parse(`${proxyEndpoints.github}settings/tokens/new`)
+				: baseUri.with({ path: '/settings/tokens/new' });
+
+			const uriToOpen = await env.asExternalUri(proxyUri.with({ query: `description=${description}&scopes=${scopes.split(' ').join(',')}` }));
 			await env.openExternal(uriToOpen);
 			const token = await window.showInputBox({ placeHolder: `ghp_1a2b3c4...`, prompt: `GitHub Personal Access Token - ${scopes}`, ignoreFocusOut: true });
 			if (!token) { throw new Error(USER_CANCELLATION_ERROR); }

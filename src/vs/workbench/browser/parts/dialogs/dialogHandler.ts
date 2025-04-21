@@ -133,6 +133,7 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 			createWorkbenchDialogOptions({
 				detail,
 				cancelId,
+				dialogId: customOptions?.dialogId,
 				type: this.getDialogType(type),
 				renderBody,
 				icon: customOptions?.icon,

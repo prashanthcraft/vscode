@@ -71,6 +71,10 @@
 	white-space: normal;
 }
 
+#codingle-model-config.monaco-dialog-box .dialog-message-row .dialog-message-container {
+	width: 100%;
+}
+
 .monaco-dialog-box .dialog-message-row .dialog-message-container ul {
 	padding-inline-start: 20px; /* reduce excessive indent of list items in the dialog */
 }
@@ -88,9 +92,20 @@
 	align-items: center;
 }
 
+#codingle-model-config.monaco-dialog-box .dialog-message-row .dialog-message-container .dialog-message {
+	min-height: 0;
+	font-size: 24px;
+}
+
 /** Dialog: Details */
 .monaco-dialog-box .dialog-message-row .dialog-message-container .dialog-message-detail {
 	line-height: 22px;
+	flex: 1; /* let the message always grow */
+}
+
+.monaco-dialog-box .dialog-message-row .dialog-message-container .dialog-message-input-label {
+	line-height: 22px;
+	padding: 15px 0px 0px;
 	flex: 1; /* let the message always grow */
 }
 
@@ -101,7 +116,7 @@
 
 /** Dialog: Checkbox */
 .monaco-dialog-box .dialog-message-row .dialog-message-container .dialog-checkbox-row {
-	padding: 15px 0px 0px;
+	padding: 18px 0px 0px;
 	display: flex;
 }
 
@@ -113,7 +128,7 @@
 
 /** Dialog: Input */
 .monaco-dialog-box .dialog-message-row .dialog-message-container .dialog-message-input {
-	padding: 15px 0px 0px;
+	padding: 18px 0px 0px;
 	display: flex;
 }
 

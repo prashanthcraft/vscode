@@ -79,6 +79,7 @@ export interface IInput extends IConfirmation {
 
 export interface IInputElement {
 	readonly type?: 'text' | 'password';
+	readonly label?: string;
 	readonly value?: string;
 	readonly placeholder?: string;
 }
@@ -278,6 +279,7 @@ export interface ICustomDialogOptions {
 	readonly classes?: string[];
 	readonly icon?: ThemeIcon;
 	readonly disableCloseAction?: boolean;
+	readonly dialogId?: 'codingle-model-config';
 }
 
 export interface ICustomDialogMarkdown {
