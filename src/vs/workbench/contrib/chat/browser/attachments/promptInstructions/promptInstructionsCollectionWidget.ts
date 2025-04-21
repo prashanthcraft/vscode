@@ -6,34 +6,37 @@
 import { URI } from '../../../../../../base/common/uri.js';
 import { Emitter } from '../../../../../../base/common/event.js';
 import { ResourceLabels } from '../../../../../browser/labels.js';
-import { PromptAttachmentWidget } from './promptAttachmentWidget.js';
 import { Disposable } from '../../../../../../base/common/lifecycle.js';
 import { ILogService } from '../../../../../../platform/log/common/log.js';
+import { InstructionsAttachmentWidget } from './promptInstructionsWidget.js';
+import { PROMPT_LANGUAGE_ID } from '../../../common/promptSyntax/constants.js';
+import { IModelService } from '../../../../../../editor/common/services/model.js';
+import { ILanguageService } from '../../../../../../editor/common/languages/language.js';
 import { IInstantiationService } from '../../../../../../platform/instantiation/common/instantiation.js';
 import { ChatPromptAttachmentsCollection } from '../../chatAttachmentModel/chatPromptAttachmentsCollection.js';
 
 /**
  * Widget for a collection of prompt instructions attachments.
- * See {@linkcode PromptAttachmentWidget}.
+ * See {@link InstructionsAttachmentWidget}.
  */
-export class PromptAttachmentsCollectionWidget extends Disposable {
+export class PromptInstructionsAttachmentsCollectionWidget extends Disposable {
 	/**
 	 * List of child instruction attachment widgets.
 	 */
-	private children: PromptAttachmentWidget[] = [];
+	private children: InstructionsAttachmentWidget[] = [];
 
 	/**
 	 * Event that fires when number of attachments change
 	 *
-	 * See {@linkcode onAttachmentsCountChange}.
+	 * See {@link onAttachmentsChange}.
 	 */
-	private _onAttachmentsCountChange = this._register(new Emitter<void>());
+	private _onAttachmentsChange = this._register(new Emitter<void>());
 	/**
-	 * Subscribe to the `onAttachmentsCountChange` event.
+	 * Subscribe to the `onAttachmentsChange` event.
 	 * @param callback Function to invoke when number of attachments change.
 	 */
-	public onAttachmentsCountChange(callback: () => unknown): this {
-		this._register(this._onAttachmentsCountChange.event(callback));
+	public onAttachmentsChange(callback: () => unknown): this {
+		this._register(this._onAttachmentsChange.event(callback));
 
 		return this;
 	}
@@ -60,16 +63,37 @@ export class PromptAttachmentsCollectionWidget extends Disposable {
 	}
 
 	/**
+	 * Get a promise that resolves when parsing/resolving processes
+	 * are fully completed, including all possible nested child references.
+	 */
+	public allSettled() {
+		return this.model.allSettled();
+	}
+
+	/**
 	 * Check if child widget list is empty (no attachments present).
 	 */
 	public get empty(): boolean {
 		return this.children.length === 0;
 	}
 
+	/**
+	 * Check if any of the attachments is a prompt file.
+	 */
+	public get hasPromptFile(): boolean {
+		return this.references.some((uri) => {
+			const model = this.modelService.getModel(uri);
+			const languageId = model ? model.getLanguageId() : this.languageService.guessLanguageIdByFilepathOrFirstLine(uri);
+			return languageId === PROMPT_LANGUAGE_ID;
+		});
+	}
+
 	constructor(
 		private readonly model: ChatPromptAttachmentsCollection,
 		private readonly resourceLabels: ResourceLabels,
 		@IInstantiationService private readonly initService: IInstantiationService,
+		@ILanguageService private readonly languageService: ILanguageService,
+		@IModelService private readonly modelService: IModelService,
 		@ILogService private readonly logService: ILogService,
 	) {
 		super();
@@ -77,9 +101,9 @@ export class PromptAttachmentsCollectionWidget extends Disposable {
 		this.render = this.render.bind(this);
 
 		// when a new attachment model is added, create a new child widget for it
-		this.model.onAdd((attachment) => {
+		this._register(this.model.onAdd((attachment) => {
 			const widget = this.initService.createInstance(
-				PromptAttachmentWidget,
+				InstructionsAttachmentWidget,
 				attachment,
 				this.resourceLabels,
 			);
@@ -90,22 +114,22 @@ export class PromptAttachmentsCollectionWidget extends Disposable {
 			// register the new child widget
 			this.children.push(widget);
 
-			// if parent node is present - append the wiget to it, otherwise wait
+			// if parent node is present - append the widget to it, otherwise wait
 			// until the `render` method will be called
 			if (this.parentNode) {
 				this.parentNode.appendChild(widget.domNode);
 			}
 
 			// fire the event to notify about the change in the number of attachments
-			this._onAttachmentsCountChange.fire();
-		});
+			this._onAttachmentsChange.fire();
+		}));
 	}
 
 	/**
 	 * Handle child widget disposal.
 	 * @param widget The child widget that was disposed.
 	 */
-	public handleAttachmentDispose(widget: PromptAttachmentWidget): this {
+	public handleAttachmentDispose(widget: InstructionsAttachmentWidget): this {
 		// common prefix for all log messages
 		const logPrefix = `[onChildDispose] Widget for instructions attachment '${widget.uri.path}'`;
 
@@ -148,7 +172,7 @@ export class PromptAttachmentsCollectionWidget extends Disposable {
 		this.parentNode?.removeChild(widget.domNode);
 
 		// fire the event to notify about the change in the number of attachments
-		this._onAttachmentsCountChange.fire();
+		this._onAttachmentsChange.fire();
 
 		return this;
 	}

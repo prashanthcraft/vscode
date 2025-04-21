@@ -1561,6 +1561,8 @@ export interface SCMProviderFeatures {
 	hasHistoryProvider?: boolean;
 	hasQuickDiffProvider?: boolean;
 	quickDiffLabel?: string;
+	hasSecondaryQuickDiffProvider?: boolean;
+	secondaryQuickDiffLabel?: string;
 	count?: number;
 	commitTemplate?: string;
 	acceptInputCommand?: languages.Command;
@@ -2533,6 +2535,7 @@ export interface ExtHostTerminalShellIntegrationShape {
 
 export interface ExtHostSCMShape {
 	$provideOriginalResource(sourceControlHandle: number, uri: UriComponents, token: CancellationToken): Promise<UriComponents | null>;
+	$provideSecondaryOriginalResource(sourceControlHandle: number, uri: UriComponents, token: CancellationToken): Promise<UriComponents | null>;
 	$onInputBoxValueChange(sourceControlHandle: number, value: string): void;
 	$executeResourceCommand(sourceControlHandle: number, groupHandle: number, handle: number, preserveFocus: boolean): Promise<void>;
 	$validateInput(sourceControlHandle: number, value: string, cursorPosition: number): Promise<[string | IMarkdownString, number] | undefined>;
@@ -2974,6 +2977,7 @@ export interface ExtHostTestingShape {
 }
 
 export interface ExtHostMcpShape {
+	$resolveMcpLaunch(collectionId: string, label: string): Promise<McpServerLaunch.Serialized | undefined>;
 	$startMcp(id: number, launch: McpServerLaunch.Serialized): void;
 	$stopMcp(id: number): void;
 	$sendMessage(id: number, message: string): void;
@@ -2984,7 +2988,7 @@ export interface MainThreadMcpShape {
 	$onDidChangeState(id: number, state: McpConnectionState): void;
 	$onDidPublishLog(id: number, level: LogLevel, log: string): void;
 	$onDidReceiveMessage(id: number, message: string): void;
-	$upsertMcpCollection(collection: McpCollectionDefinition.FromExtHost, servers: Dto<McpServerDefinition>[]): void;
+	$upsertMcpCollection(collection: McpCollectionDefinition.FromExtHost, servers: McpServerDefinition.Serialized[]): void;
 	$deleteMcpCollection(collectionId: string): void;
 }
 

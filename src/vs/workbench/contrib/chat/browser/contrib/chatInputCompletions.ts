@@ -27,7 +27,6 @@ import { IConfigurationService } from '../../../../../platform/configuration/com
 import { IFileService } from '../../../../../platform/files/common/files.js';
 import { IInstantiationService, ServicesAccessor } from '../../../../../platform/instantiation/common/instantiation.js';
 import { ILabelService } from '../../../../../platform/label/common/label.js';
-import { IMarkerService } from '../../../../../platform/markers/common/markers.js';
 import { Registry } from '../../../../../platform/registry/common/platform.js';
 import { IWorkspaceContextService } from '../../../../../platform/workspace/common/workspace.js';
 import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from '../../../../common/contributions.js';
@@ -38,10 +37,11 @@ import { QueryBuilder } from '../../../../services/search/common/queryBuilder.js
 import { ISearchService } from '../../../../services/search/common/search.js';
 import { IChatAgentData, IChatAgentNameService, IChatAgentService, getFullyQualifiedId } from '../../common/chatAgents.js';
 import { IChatEditingService } from '../../common/chatEditingService.js';
-import { ChatRequestAgentPart, ChatRequestAgentSubcommandPart, ChatRequestTextPart, ChatRequestToolPart, chatAgentLeader, chatSubcommandLeader, chatVariableLeader } from '../../common/chatParserTypes.js';
+import { ChatRequestAgentPart, ChatRequestAgentSubcommandPart, ChatRequestSlashPromptPart, ChatRequestTextPart, ChatRequestToolPart, chatAgentLeader, chatSubcommandLeader, chatVariableLeader } from '../../common/chatParserTypes.js';
 import { IChatSlashCommandService } from '../../common/chatSlashCommands.js';
 import { IDynamicVariable } from '../../common/chatVariables.js';
 import { ChatAgentLocation, ChatMode } from '../../common/constants.js';
+import { IPromptsService } from '../../common/promptSyntax/service/types.js';
 import { ChatSubmitAction } from '../actions/chatExecuteActions.js';
 import { IChatWidget, IChatWidgetService } from '../chat.js';
 import { ChatInputPart } from '../chatInputPart.js';
@@ -51,7 +51,8 @@ class SlashCommandCompletions extends Disposable {
 	constructor(
 		@ILanguageFeaturesService private readonly languageFeaturesService: ILanguageFeaturesService,
 		@IChatWidgetService private readonly chatWidgetService: IChatWidgetService,
-		@IChatSlashCommandService private readonly chatSlashCommandService: IChatSlashCommandService
+		@IChatSlashCommandService private readonly chatSlashCommandService: IChatSlashCommandService,
+		@IPromptsService private readonly promptsService: IPromptsService,
 	) {
 		super();
 
@@ -143,6 +144,53 @@ class SlashCommandCompletions extends Disposable {
 				};
 			}
 		}));
+		this._register(this.languageFeaturesService.completionProvider.register({ scheme: ChatInputPart.INPUT_SCHEME, hasAccessToAllModels: true }, {
+			_debugDisplayName: 'promptSlashCommands',
+			triggerCharacters: ['/'],
+			provideCompletionItems: async (model: ITextModel, position: Position, _context: CompletionContext, _token: CancellationToken) => {
+				const widget = this.chatWidgetService.getWidgetByInputUri(model.uri);
+				if (!widget || !widget.viewModel) {
+					return null;
+				}
+
+				const range = computeCompletionRanges(model, position, /\/\w*/g);
+				if (!range) {
+					return null;
+				}
+
+				if (!isEmptyUpToCompletionWord(model, range)) {
+					// No text allowed before the completion
+					return;
+				}
+
+				const parsedRequest = widget.parsedInput.parts;
+				const usedAgent = parsedRequest.find(p => p instanceof ChatRequestAgentPart);
+				if (usedAgent) {
+					// No (classic) global slash commands when an agent is used
+					return;
+				}
+
+				const promptCommands = await this.promptsService.findPromptSlashCommands();
+				if (promptCommands.length === 0) {
+					return null;
+				}
+
+				return {
+					suggestions: promptCommands.map((c, i): CompletionItem => {
+						const label = `/${c.command}`;
+						const description = c.promptPath?.storage === 'user' ? localize('promptFileDescription', 'User Prompt File') : localize('promptFileDescriptionWorkspace', 'Workspace Prompt File');
+						return {
+							label: { label, description },
+							insertText: `${label} `,
+							documentation: c.detail,
+							range,
+							sortText: 'a'.repeat(i + 1),
+							kind: CompletionItemKind.Text, // The icons are disabled here anyway,
+						};
+					})
+				};
+			}
+		}));
 	}
 }
 
@@ -178,8 +226,8 @@ class AgentCompletions extends Disposable {
 					return;
 				}
 
-				const usedSubcommand = parsedRequest.find(p => p instanceof ChatRequestAgentSubcommandPart);
-				if (usedSubcommand) {
+				const usedOtherCommand = parsedRequest.find(p => p instanceof ChatRequestAgentSubcommandPart || p instanceof ChatRequestSlashPromptPart);
+				if (usedOtherCommand) {
 					// Only one allowed
 					return;
 				}
@@ -451,7 +499,7 @@ interface IVariableCompletionsDetails {
 
 class BuiltinDynamicCompletions extends Disposable {
 	private static readonly addReferenceCommand = '_addReferenceCmd';
-	private static readonly VariableNameDef = new RegExp(`${chatVariableLeader}[\\w:]*`, 'g'); // MUST be using `g`-flag
+	private static readonly VariableNameDef = new RegExp(`${chatVariableLeader}[\\w:-]*`, 'g'); // MUST be using `g`-flag
 
 	private readonly queryBuilder: QueryBuilder;
 
@@ -468,7 +516,6 @@ class BuiltinDynamicCompletions extends Disposable {
 		@IEditorService private readonly editorService: IEditorService,
 		@IConfigurationService private readonly configurationService: IConfigurationService,
 		@IFileService private readonly fileService: IFileService,
-		@IMarkerService markerService: IMarkerService,
 	) {
 		super();
 

@@ -1515,7 +1515,7 @@ export function createApiFactoryAndRegisterActors(accessor: ServicesAccessor): I
 			get tools() {
 				return extHostLanguageModelTools.getTools(extension);
 			},
-			fileIsIgnored(uri: vscode.Uri, token: vscode.CancellationToken) {
+			fileIsIgnored(uri: vscode.Uri, token?: vscode.CancellationToken) {
 				return extHostLanguageModels.fileIsIgnored(extension, uri, token);
 			},
 			registerIgnoredFileProvider(provider: vscode.LanguageModelIgnoredFileProvider) {
@@ -1797,13 +1797,16 @@ export function createApiFactoryAndRegisterActors(accessor: ServicesAccessor): I
 			ChatResponseCommandButtonPart: extHostTypes.ChatResponseCommandButtonPart,
 			ChatResponseConfirmationPart: extHostTypes.ChatResponseConfirmationPart,
 			ChatResponseMovePart: extHostTypes.ChatResponseMovePart,
+			ChatResponseExtensionsPart: extHostTypes.ChatResponseExtensionsPart,
 			ChatResponseReferencePartStatusKind: extHostTypes.ChatResponseReferencePartStatusKind,
 			ChatRequestTurn: extHostTypes.ChatRequestTurn,
+			ChatRequestTurn2: extHostTypes.ChatRequestTurn,
 			ChatResponseTurn: extHostTypes.ChatResponseTurn,
 			ChatLocation: extHostTypes.ChatLocation,
 			ChatRequestEditorData: extHostTypes.ChatRequestEditorData,
 			ChatRequestNotebookData: extHostTypes.ChatRequestNotebookData,
 			ChatReferenceBinaryData: extHostTypes.ChatReferenceBinaryData,
+			ChatRequestEditedFileEventKind: extHostTypes.ChatRequestEditedFileEventKind,
 			LanguageModelChatMessageRole: extHostTypes.LanguageModelChatMessageRole,
 			LanguageModelChatMessage: extHostTypes.LanguageModelChatMessage,
 			LanguageModelChatMessage2: extHostTypes.LanguageModelChatMessage2,
@@ -1813,6 +1816,7 @@ export function createApiFactoryAndRegisterActors(accessor: ServicesAccessor): I
 			LanguageModelError: extHostTypes.LanguageModelError,
 			LanguageModelToolResult: extHostTypes.LanguageModelToolResult,
 			LanguageModelDataPart: extHostTypes.LanguageModelDataPart,
+			LanguageModelExtraDataPart: extHostTypes.LanguageModelExtraDataPart,
 			ChatImageMimeType: extHostTypes.ChatImageMimeType,
 			ExtendedLanguageModelToolResult: extHostTypes.ExtendedLanguageModelToolResult,
 			PreparedTerminalToolInvocation: extHostTypes.PreparedTerminalToolInvocation,
@@ -1829,7 +1833,7 @@ export function createApiFactoryAndRegisterActors(accessor: ServicesAccessor): I
 			AISearchKeyword: AISearchKeyword,
 			TextSearchCompleteMessageTypeNew: TextSearchCompleteMessageType,
 			ChatErrorLevel: extHostTypes.ChatErrorLevel,
-			McpSSEServerDefinition: extHostTypes.McpSSEServerDefinition,
+			McpHttpServerDefinition: extHostTypes.McpHttpServerDefinition,
 			McpStdioServerDefinition: extHostTypes.McpStdioServerDefinition,
 		};
 	};
