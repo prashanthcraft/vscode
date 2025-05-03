@@ -59,6 +59,9 @@
   },
   "type": "commonjs",
   "scripts": {
+    "compile-win": "npx tsc -p tsconfig.build.json",
+    "watch-win": "npx tsc -p tsconfig.build.json --watch",
+    "npmCheckJs-win": "npx tsc --noEmit",
     "compile": "../node_modules/.bin/tsc -p tsconfig.build.json",
     "watch": "../node_modules/.bin/tsc -p tsconfig.build.json --watch",
     "npmCheckJs": "../node_modules/.bin/tsc --noEmit"

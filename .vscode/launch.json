@@ -503,7 +503,7 @@
 				"runtimeExecutable": "${workspaceFolder}/.build/electron/Codingle.exe"
 			},
 			"linux": {
-				"runtimeExecutable": "${workspaceFolder}/.build/electron/code-oss"
+				"runtimeExecutable": "${workspaceFolder}/.build/electron/codingle"
 			},
 			"outputCapture": "std",
 			"args": [
@@ -533,7 +533,7 @@
 				"runtimeExecutable": "${workspaceFolder}/.build/electron/Codingle.exe"
 			},
 			"linux": {
-				"runtimeExecutable": "${workspaceFolder}/.build/electron/code-oss"
+				"runtimeExecutable": "${workspaceFolder}/.build/electron/codingle"
 			},
 			"cascadeTerminateToConfigurations": [
 				"Attach to VS Code"

@@ -8,7 +8,7 @@
 		"ghcr.io/devcontainers/features/rust:1": {}
 	},
 	"containerEnv": {
-		"DISPLAY": "" // Allow the Dev Containers extension to set DISPLAY, post-create.sh will add it back in ~/.bashrc and ~/.zshrc if not set.
+		"DISPLAY": ":1" // Allow the Dev Containers extension to set DISPLAY, post-create.sh will add it back in ~/.bashrc and ~/.zshrc if not set.
 	},
 	"overrideCommand": false,
 	"privileged": true,
@@ -32,7 +32,14 @@
 				"GitHub.vscode-pull-request-github",
 				"ms-vscode.vscode-github-issue-notebooks",
 				"ms-vscode.vscode-selfhost-test-provider",
-				"mutantdino.resourcemonitor"
+				"mutantdino.resourcemonitor",
+				"eamodio.gitlens",
+				"ms-azuretools.vscode-docker",
+				"dbaeumer.vscode-eslint",
+				"wix.vscode-import-cost",
+				"Orta.vscode-jest",
+				"firsttris.vscode-jest-runner",
+				"esbenp.prettier-vscode"
 			]
 		}
 	},
