@@ -223,7 +223,7 @@ exports.config = {
 };
 function getElectron(arch) {
     return () => {
-        const electron = require('@vscode/gulp-electron');
+        const electron = require('@codingle/gulp-electron');
         const json = require('gulp-json-editor');
         const electronOpts = {
             ...exports.config,
