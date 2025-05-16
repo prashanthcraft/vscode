@@ -107,7 +107,7 @@ class SetupAgent extends Disposable implements IChatAgentImplementation {
 			const chatAgentService = accessor.get(IChatAgentService);
 
 			let id: string;
-			let description = localize('chatDescription', "Ask Copilot");
+			let description = localize('chatDescription', "Ask Codingle Copilot to help you with your code.");
 			switch (location) {
 				case ChatAgentLocation.Panel:
 					if (mode === ChatMode.Ask) {

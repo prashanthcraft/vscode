@@ -23,27 +23,27 @@ class NativeBuiltinToolsContribution extends Disposable implements IWorkbenchCon
 		super();
 
 		const editTool = instantiationService.createInstance(FetchWebPageTool);
-		this._register(toolsService.registerToolData(FetchWebPageToolData));
-		this._register(toolsService.registerToolImplementation(FetchWebPageToolData.id, editTool));
+		// this._register(toolsService.registerToolData(FetchWebPageToolData));
+		// this._register(toolsService.registerToolImplementation(FetchWebPageToolData.id, editTool));
 	}
 }
 
-registerAction2(StartVoiceChatAction);
-registerAction2(InstallSpeechProviderForVoiceChatAction);
+// registerAction2(StartVoiceChatAction);
+// registerAction2(InstallSpeechProviderForVoiceChatAction);
 
-registerAction2(VoiceChatInChatViewAction);
-registerAction2(HoldToVoiceChatInChatViewAction);
-registerAction2(QuickVoiceChatAction);
-registerAction2(InlineVoiceChatAction);
+// registerAction2(VoiceChatInChatViewAction);
+// registerAction2(HoldToVoiceChatInChatViewAction);
+// registerAction2(QuickVoiceChatAction);
+// registerAction2(InlineVoiceChatAction);
 
-registerAction2(StopListeningAction);
-registerAction2(StopListeningAndSubmitAction);
+// registerAction2(StopListeningAction);
+// registerAction2(StopListeningAndSubmitAction);
 
-registerAction2(ReadChatResponseAloud);
-registerAction2(StopReadChatItemAloud);
-registerAction2(StopReadAloud);
+// registerAction2(ReadChatResponseAloud);
+// registerAction2(StopReadChatItemAloud);
+// registerAction2(StopReadAloud);
 
-registerChatDeveloperActions();
+// registerChatDeveloperActions();
 
-registerWorkbenchContribution2(KeywordActivationContribution.ID, KeywordActivationContribution, WorkbenchPhase.AfterRestored);
-registerWorkbenchContribution2(NativeBuiltinToolsContribution.ID, NativeBuiltinToolsContribution, WorkbenchPhase.AfterRestored);
+// registerWorkbenchContribution2(KeywordActivationContribution.ID, KeywordActivationContribution, WorkbenchPhase.AfterRestored);
+// registerWorkbenchContribution2(NativeBuiltinToolsContribution.ID, NativeBuiltinToolsContribution, WorkbenchPhase.AfterRestored);

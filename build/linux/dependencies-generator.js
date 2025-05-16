@@ -17,7 +17,6 @@ const dep_lists_1 = require("./debian/dep-lists");
 const dep_lists_2 = require("./rpm/dep-lists");
 const types_1 = require("./debian/types");
 const types_2 = require("./rpm/types");
-const product = require("../../product.json");
 // A flag that can easily be toggled.
 // Make sure to compile the build directory after toggling the value.
 // If false, we warn about new dependencies if they show up
@@ -57,8 +56,6 @@ async function getDependencies(packageType, buildDir, applicationName, arch) {
     const appPath = path_1.default.join(buildDir, applicationName);
     // Add the native modules
     const files = findResult.stdout.toString().trimEnd().split('\n');
-    // Add the tunnel binary.
-    files.push(path_1.default.join(buildDir, 'bin', product.tunnelApplicationName));
     // Add the main executable.
     files.push(appPath);
     // Add chrome sandbox and crashpad handler.
