@@ -176,7 +176,7 @@ jobs:
         working-directory: ./repository
         run: npm run gulp vscode-win32-${{ matrix.arch }}-inno-updater
 
-      - name: Debug: List Files to Sign
+      - name: Debug- List Files to Sign
         run: dir ${{ github.workspace }}/repository/.build/win32-${{ matrix.arch }}
 
       - name: Sign Executables
@@ -192,8 +192,6 @@ jobs:
           files-folder-filter: exe,dll,node,ps1,psm1
           files-folder-recurse: true
           files-folder-depth: 3
-          files-folder-recurse: true
-          files-folder-depth: 100
           file-digest: SHA256
           timestamp-rfc3161: http://timestamp.acs.microsoft.com
           timestamp-digest: SHA256
