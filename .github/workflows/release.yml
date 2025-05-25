@@ -177,7 +177,11 @@ jobs:
         run: npm run gulp vscode-win32-${{ matrix.arch }}-inno-updater
 
       - name: Debug- List Files to Sign
-        run: dir ${{ github.workspace }}/repository/.build/win32-${{ matrix.arch }}
+        run: |
+          echo "Listing contents of ${{ github.workspace }}/repository/.build/"
+          dir ${{ github.workspace }}/repository/.build
+          echo "Attempting to list contents of ${{ github.workspace }}/repository/.build/win32-${{ matrix.arch }}/"
+          dir ${{ github.workspace }}/repository/.build/win32-${{ matrix.arch }} -ErrorAction SilentlyContinue
 
       - name: Sign Executables
         uses: azure/trusted-signing-action@v0.5.1
