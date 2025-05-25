@@ -59,8 +59,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          cache: 'pip'
-          cache-dependency-path: 'repository/requirements.txt'
 
       - name: Install Linux Build Dependencies
         run: |
@@ -165,8 +163,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          cache: 'pip'
-          cache-dependency-path: 'repository/requirements.txt'
 
       - name: Install dependencies
         working-directory: ${{ github.workspace }}/repository
