@@ -96,13 +96,12 @@ jobs:
     name: "Build for Windows"
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      npm_config_arch: ${{ matrix.arch == 'x64' && 'x64' || 'arm64' }}
     strategy:
       fail-fast: false
       matrix:
         target: [user, system]
         arch: [x64, arm64]
-    env:
-      npm_config_arch: ${{ matrix.arch == 'x64' && 'x64' || 'arm64' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -130,7 +129,7 @@ jobs:
           cache: 'pip'
 
       - name: Install dependencies
-        working-directory: .\repository
+        working-directory: ${{ github.workspace }}/repository
         run: npm install
 
       - name: Build Executables
