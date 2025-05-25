@@ -180,8 +180,8 @@ jobs:
         run: |
           echo "Listing contents of ${{ github.workspace }}/repository/.build/"
           dir ${{ github.workspace }}/repository/.build
-          echo "Attempting to list contents of ${{ github.workspace }}/repository/.build/win32-${{ matrix.arch }}/"
-          dir ${{ github.workspace }}/repository/.build/win32-${{ matrix.arch }} -ErrorAction SilentlyContinue
+          echo "Attempting to list contents of ${{ github.workspace }}/VSCode-win32-${{ matrix.arch }}/"
+          dir ${{ github.workspace }}/VSCode-win32-${{ matrix.arch }} -ErrorAction SilentlyContinue
 
       - name: Sign Executables
         uses: azure/trusted-signing-action@v0.5.1
@@ -192,10 +192,10 @@ jobs:
           endpoint: https://eus.codesigning.azure.net/
           trusted-signing-account-name: ${{ secrets.AZURE_TRUSTED_SIGNING_ACCOUNT_NAME }}
           certificate-profile-name: ${{ secrets.AZURE_CERTIFICATE_PROFILE_NAME }}
-          files-folder: ${{ github.workspace }}/repository/.build/win32-${{ matrix.arch }}
+          files-folder: ${{ github.workspace }}/VSCode-win32-${{ matrix.arch }}
           files-folder-filter: exe,dll,node,ps1,psm1
           files-folder-recurse: true
-          files-folder-depth: 10
+          files-folder-depth: 100
           file-digest: SHA256
           timestamp-rfc3161: http://timestamp.acs.microsoft.com
           timestamp-digest: SHA256
