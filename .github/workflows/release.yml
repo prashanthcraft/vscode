@@ -70,15 +70,15 @@ jobs:
         run: npm install
 
       - name: Build Codingle Executables
-        working-directory: ${{ github.workspace }}/repository
+        working-directory: ./repository
         run: npm run gulp vscode-linux-${{ matrix.arch }}-min
 
       - name: Prepare Debian Package Files
-        working-directory: ${{ github.workspace }}/repository
+        working-directory: ./repository
         run: npm run gulp vscode-linux-${{ matrix.arch }}-prepare-deb
 
       - name: Build Debian Package
-        working-directory: ${{ github.workspace }}/repository
+        working-directory: ./repository
         run: npm run gulp vscode-linux-${{ matrix.arch }}-build-deb
 
       - name: Rename Debian Package
@@ -92,11 +92,11 @@ jobs:
           path: ${{ github.workspace }}/repository/.build/linux/deb/${{ matrix.arch == 'x64' && 'amd64' || 'arm64' }}/deb/linux-${{ matrix.arch }}.deb
 
       - name: Prepare RPM Package Files
-        working-directory: ${{ github.workspace }}/repository
+        working-directory: ./repository
         run: npm run gulp vscode-linux-${{ matrix.arch }}-prepare-rpm
 
       - name: Build RPM Package
-        working-directory: ${{ github.workspace }}/repository
+        working-directory: ./repository
         run: npm run gulp vscode-linux-${{ matrix.arch }}-build-rpm
 
       - name: Rename RPM Package
@@ -169,12 +169,15 @@ jobs:
         run: npm install
 
       - name: Build Executables
-        working-directory: ${{ github.workspace }}/repository
+        working-directory: ./repository
         run: npm run gulp vscode-win32-${{ matrix.arch }}-min
 
       - name: Apply Inno Setup Updater
-        working-directory: ${{ github.workspace }}/repository
+        working-directory: ./repository
         run: npm run gulp vscode-win32-${{ matrix.arch }}-inno-updater
+
+      - name: Debug: List Files to Sign
+        run: dir ${{ github.workspace }}/repository/.build/win32-${{ matrix.arch }}
 
       - name: Sign Executables
         uses: azure/trusted-signing-action@v0.5.1
@@ -188,13 +191,15 @@ jobs:
           files-folder: ${{ github.workspace }}/repository/.build/win32-${{ matrix.arch }}
           files-folder-filter: exe,dll,node,ps1,psm1
           files-folder-recurse: true
+          files-folder-depth: 3
+          files-folder-recurse: true
           files-folder-depth: 100
           file-digest: SHA256
           timestamp-rfc3161: http://timestamp.acs.microsoft.com
           timestamp-digest: SHA256
 
       - name: Create Installer
-        working-directory: ${{ github.workspace }}/repository
+        working-directory: ./repository
         run: npm run gulp vscode-win32-${{ matrix.arch }}-${{ matrix.target }}-setup
 
       - name: Sign Installer
