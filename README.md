@@ -12,12 +12,12 @@ Codingle IDE is an open-source, AI-native, privacy-first IDE that offers the fle
 
 Experience the power of Codingle IDE without any installation! Click the button below to launch Codingle IDE in your browser and start browsing with AI-powered chat, and more.
 
-[![Open in Codingle AI Web IDE](https://badges.codingle.ai/open-in-web-ide.svg)](https://codingle.ai/web-ide-redirect?provider=github&owner=codingle-ai&repo=codingle-ide&branch=main)
+[![Open in Codingle AI Web IDE](https://badges.codingle.in/open-in-web-ide.svg)](https://codingle.in/web-ide-redirect?provider=github&owner=codingle-ai&repo=codingle-ide&branch=main)
 
 ## 📦 Installation
 
 1. Install Codingle IDE from the [GitHub Releases](https://github.com/codingle-ai/codingle-ide/releases/latest) page.
-2. Configure your preferred Language model providers as explained [here](https://codingle.ai/configuration/chat.html) in the official documentation.
+2. Configure your preferred Language model providers as explained [here](https://codingle.in/configuration/chat.html) in the official documentation.
 3. Start coding with AI-powered completions, chat, and more!
 
 ## ✨ Why Codingle?

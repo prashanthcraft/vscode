@@ -322,7 +322,7 @@ export const panelChatPrompts = {
 				<p>
 					{/* allow-any-unicode-next-line */}
 					📚 Explore the Codingle IDE official documentation{' '}
-					<a href='https://codingle.ai'>here</a> for all the details.
+					<a href='https://codingle.in'>here</a> for all the details.
 				</p>
 			</Message>
 		);

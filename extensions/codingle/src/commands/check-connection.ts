@@ -112,7 +112,7 @@ const registerGithubCopilotModels = async (session: vscode.AuthenticationSession
  */
 const checkInternetConnection = async () => {
 	try {
-		await fetch(corsEnableUrl('https://codingle.ai'), { method: 'HEAD' });
+		await fetch(corsEnableUrl('https://codingle.in'), { method: 'HEAD' });
 		return true;
 	} catch (error) {
 		logger.error(error);

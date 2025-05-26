@@ -51,7 +51,7 @@ const handler = async () => {
 		},
 		{
 			label: '$(remote-explorer-documentation) View Codingle Docs...',
-			handler: async () => { await vscode.env.openExternal(vscode.Uri.parse('https://codingle.ai/installation')); },
+			handler: async () => { await vscode.env.openExternal(vscode.Uri.parse('https://codingle.in/installation')); },
 		},
 	];
 

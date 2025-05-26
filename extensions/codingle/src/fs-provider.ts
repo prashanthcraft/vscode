@@ -129,7 +129,7 @@ export class GitHubFileSystemProvider implements vscode.FileSystemProvider, vsco
 			'Get Desktop Version'
 		).then(value => {
 			if (value === 'Get Desktop Version') {
-				vscode.env.openExternal(vscode.Uri.parse('https://codingle.ai/'));
+				vscode.env.openExternal(vscode.Uri.parse('https://codingle.in/'));
 			}
 		});
 		return null;

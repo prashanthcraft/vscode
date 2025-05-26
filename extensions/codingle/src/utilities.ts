@@ -69,7 +69,7 @@ export const corsEnableUrl = (url: string) => {
 	baseUrlObject.protocol = 'https:';
 	baseUrlObject.port = '';
 	baseUrlObject.pathname = '/' + baseUrlObject.hostname + baseUrlObject.pathname;
-	baseUrlObject.hostname = 'cors-proxy.codingle.ai';
+	baseUrlObject.hostname = 'cors-proxy.codingle.in';
 	return baseUrlObject.toString();
 };
 
