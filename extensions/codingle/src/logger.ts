@@ -71,7 +71,7 @@ export class LoggerSingleton extends vscode.Disposable {
 			.then(async (selection) => {
 				if (selection === 'Open Docs') {
 					vscode.env.openExternal(
-						vscode.Uri.parse('https://codingle.ai/installation'),
+						vscode.Uri.parse('https://codingle.in/installation'),
 					);
 				}
 			});

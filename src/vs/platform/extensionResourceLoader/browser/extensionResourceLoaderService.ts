@@ -25,7 +25,7 @@ export const corsEnableUrl = (url: string) => {
 	baseUrlObject.protocol = 'https:';
 	baseUrlObject.port = '';
 	baseUrlObject.pathname = '/' + baseUrlObject.hostname + baseUrlObject.pathname;
-	baseUrlObject.hostname = 'cors-proxy.codingle.ai';
+	baseUrlObject.hostname = 'cors-proxy.codingle.in';
 	return URI.parse(baseUrlObject.toString());
 };
 
@@ -60,7 +60,7 @@ class ExtensionResourceLoaderService extends AbstractExtensionResourceLoaderServ
 		}
 
 		const requestUrl = new URL(uri.toString(true));
-		const CORS_SKIP_HOSTS = ['localhost', 'ide.codingle.ai', 'cors-proxy.codingle.ai'];
+		const CORS_SKIP_HOSTS = ['localhost', 'ide.codingle.in', 'cors-proxy.codingle.in'];
 		if (!CORS_SKIP_HOSTS.includes(requestUrl.hostname)) {
 			uri = corsEnableUrl(uri.toString(true));
 		}

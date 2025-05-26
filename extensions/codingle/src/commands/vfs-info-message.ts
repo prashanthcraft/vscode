@@ -16,7 +16,7 @@ const handler = async () => {
 		{ modal: true }, 'Continue', 'Download Desktop IDE'
 	).then((selection) => {
 		if (selection === 'Download Desktop IDE') {
-			vscode.env.openExternal(vscode.Uri.parse('https://codingle.ai'));
+			vscode.env.openExternal(vscode.Uri.parse('https://codingle.in'));
 		}
 	});
 };

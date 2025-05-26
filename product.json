@@ -16,11 +16,11 @@
 	"win32DirName": "Codingle",
 	"win32NameVersion": "Codingle",
 	"win32RegValueName": "CodingleIDE",
-	"win32x64AppId": "{{D77B7E06-80BA-4137-BCF4-654B95CCEBC5}",
-	"win32arm64AppId": "{{D1ACE434-89C5-48D1-88D3-E2991DF85475}",
-	"win32x64UserAppId": "{{CC6B787D-37A0-49E8-AE24-8559A032BE0C}",
-	"win32arm64UserAppId": "{{3AEBF0C8-F733-4AD4-BADE-FDB816D53D7B}",
-	"win32AppUserModelId": "CodingleAI.CodingleIDE",
+	"win32x64AppId": "{{4B842707-9448-4404-9B37-975A8D87E65B}",
+	"win32arm64AppId": "{{0AEFF7D9-8F50-4AAE-8221-646E670B3FFD}",
+	"win32x64UserAppId": "{{A1187E39-17BC-46A5-8D39-40FA56A81C0BC}",
+	"win32arm64UserAppId": "{{CF4F6A96-6DF1-48D4-AB4B-576467ABDC98}",
+	"win32AppUserModelId": "Aimingle.CodingleIDE",
 	"win32ShellNameShort": "Codingle",
 	"win32TunnelServiceMutex": "codingleide-tunnelservice",
 	"win32TunnelMutex": "codingleide-tunnel",
@@ -85,9 +85,9 @@
 	],
 
 	"defaultChatAgent": {
-		"extensionId": "codingle.codingle",
+		"extensionId": "aimingle.codingle",
 		"providerId": "github",
-		"documentationUrl": "https://codingle.ai/installation"
+		"documentationUrl": "https://codingle.in/installation"
 	},
 	"linkProtectionTrustedDomains": [
 		"https://*.visualstudio.com",
@@ -104,11 +104,11 @@
 		"https://private-user-images.githubusercontent.com",
 		"https://avatars.githubusercontent.com",
 		"https://open-vsx.org",
-		"https://*.codingle.ai"
+		"https://*.codingle.in"
 	],
 	"trustedExtensionAuthAccess": {
 		"github": [
-			"codingle.codingle"
+			"aimingle.codingle"
 		]
 	},
 	"trustedExtensionProtocolHandlers": [
