@@ -13,6 +13,53 @@ permissions:
   contents: write
 
 jobs:
+  macos_build:
+    runs-on: ${{ matrix.runner }}
+    name: "Build for Mac OS"
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-latest
+            arch: arm64
+          - runner: macos-13
+            arch: x64
+    steps:
+      - name: Checkout Repository Source Code
+        uses: actions/checkout@v4
+        with:
+          path: 'repository'
+
+      - name: Set up Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Set up Python Environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Project Dependencies
+        working-directory: ./repository
+        run: npm install
+
+      - name: Build Mac OS Executables
+        working-directory: ./repository
+        run: npm run gulp vscode-darwin-${{ matrix.arch }}-min
+
+      - name: Package Application for Distribution
+        working-directory: ./VSCode-darwin-${{ matrix.arch }}
+        run: ditto -c -k --sequesterRsrc --keepParent "Codingle.app" "macos-${{ matrix.arch }}-app.zip"
+
+      - name: Upload Application Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-${{ matrix.arch }}-app
+          path: "VSCode-darwin-${{ matrix.arch }}/macos-${{ matrix.arch }}-app.zip"
+
   linux_build:
     runs-on: ${{ matrix.runner }}
     name: "Build for Linux"
