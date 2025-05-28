@@ -18,6 +18,101 @@ permissions:
   contents: write
 
 jobs:
+  macos_build:
+    runs-on: ${{ matrix.runner }}
+    environment: production
+    name: "Release for Mac OS"
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-latest
+            arch: arm64
+          - runner: macos-13
+            arch: x64
+    steps:
+      - name: Checkout Repository Source Code
+        uses: actions/checkout@v4
+        with:
+          path: 'repository'
+
+      - name: Install Apple Certificate and Provisioning Profile
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          # Create variables for certificate and keychain paths
+          CERTIFICATE_PATH="${{ runner.temp }}/build_certificate.p12"
+          KEYCHAIN_PATH="${{ runner.temp }}/buildagent.keychain"
+
+          # Decode and import certificate from secrets
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+
+          # Create and configure temporary keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # Import the certificate to the keychain
+          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security set-key-partition-list -S apple-tool:,apple: -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
+          security find-identity $KEYCHAIN_PATH
+
+      - name: Set up Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Set up Python Environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Project Dependencies
+        working-directory: ./repository
+        run: npm install
+
+      - name: Build Mac OS Executables
+        working-directory: ./repository
+        run: npm run gulp vscode-darwin-${{ matrix.arch }}-min
+
+      - name: Code Sign Application
+        working-directory: ./repository
+        env:
+          VSCODE_ARCH: ${{ matrix.arch }}
+          CODESIGN_IDENTITY: ${{ env.CODESIGN_IDENTITY }}
+          AGENT_TEMPDIRECTORY: ${{ runner.temp }}
+        run: node build/darwin/sign.js "${{ github.workspace }}"
+
+      - name: Package Application for Distribution
+        working-directory: ./VSCode-darwin-${{ matrix.arch }}
+        run: ditto -c -k --sequesterRsrc --keepParent "Flexpilot.app" "macos-${{ matrix.arch }}-app.zip"
+
+      - name: Notarize Application for macOS
+        working-directory: ./VSCode-darwin-${{ matrix.arch }}
+        run: xcrun notarytool submit --output-format "json" --wait --apple-id "${{ secrets.APPLE_ID }}" --team-id "${{ secrets.APPLE_TEAM_ID }}" --password "${{ secrets.APPLE_APP_PASSWORD }}" "macos-${{ matrix.arch }}-app.zip"
+
+      - name: Staple Notarization to Application
+        working-directory: ./VSCode-darwin-${{ matrix.arch }}
+        run: xcrun stapler staple "Flexpilot.app"
+
+      - name: Upload Application Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-${{ matrix.arch }}-app
+          path: "VSCode-darwin-${{ matrix.arch }}/macos-${{ matrix.arch }}-app.zip"
+
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: "VSCode-darwin-${{ matrix.arch }}/macos-${{ matrix.arch }}-app.zip"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   linux_build:
     runs-on: ${{ matrix.runner }}
     environment: production
@@ -148,9 +243,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: repository/node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('repository/package-lock.json') }}
+          key: ${{ runner.os }}-${{ matrix.arch }}-node-${{ hashFiles('repository/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-
+            ${{ runner.os }}-${{ matrix.arch }}-node-
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -163,6 +258,9 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3.5.0
 
       - name: Install dependencies
         working-directory: ${{ github.workspace }}/repository
@@ -183,40 +281,15 @@ jobs:
           echo "Attempting to list contents of ${{ github.workspace }}/VSCode-win32-${{ matrix.arch }}/"
           dir ${{ github.workspace }}/VSCode-win32-${{ matrix.arch }} -ErrorAction SilentlyContinue
 
-      - name: Sign Executables
-        uses: azure/trusted-signing-action@v0.5.1
-        with:
-          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-          endpoint: https://eus.codesigning.azure.net/
-          trusted-signing-account-name: ${{ secrets.AZURE_TRUSTED_SIGNING_ACCOUNT_NAME }}
-          certificate-profile-name: ${{ secrets.AZURE_CERTIFICATE_PROFILE_NAME }}
-          files-folder: ${{ github.workspace }}/VSCode-win32-${{ matrix.arch }}
-          files-folder-filter: exe,dll,node,ps1,psm1
-          files-folder-recurse: true
-          files-folder-depth: 100
-          file-digest: SHA256
-          timestamp-rfc3161: http://timestamp.acs.microsoft.com
-          timestamp-digest: SHA256
-
       - name: Create Installer
         working-directory: ./repository
         run: npm run gulp vscode-win32-${{ matrix.arch }}-${{ matrix.target }}-setup
 
-      - name: Sign Installer
-        uses: azure/trusted-signing-action@v0.5.1
-        with:
-          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-          endpoint: https://eus.codesigning.azure.net/
-          trusted-signing-account-name: ${{ secrets.AZURE_TRUSTED_SIGNING_ACCOUNT_NAME }}
-          certificate-profile-name: ${{ secrets.AZURE_CERTIFICATE_PROFILE_NAME }}
-          files: ${{ github.workspace }}/repository/.build/win32-${{ matrix.arch }}/${{ matrix.target }}-setup/Codingle.exe
-          file-digest: SHA256
-          timestamp-rfc3161: http://timestamp.acs.microsoft.com
-          timestamp-digest: SHA256
+      - name: Cosign the Installer
+        env:
+          COSIGN_EXPERIMENTAL: "1" # Enable keyless signing with GitHub OIDC token
+        run: |
+          cosign sign-blob --yes --output-signature ${{ github.workspace }}/repository/.build/win32-${{ matrix.arch }}/${{ matrix.target }}-setup/Codingle.exe.sig ${{ github.workspace }}/repository/.build/win32-${{ matrix.arch }}/${{ matrix.target }}-setup/Codingle.exe
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
@@ -224,14 +297,18 @@ jobs:
           name: windows-${{ matrix.arch }}-${{ matrix.target }}-exe
           path: ${{ github.workspace }}/repository/.build/win32-${{ matrix.arch }}/${{ matrix.target }}-setup/Codingle.exe
 
-      - name: Rename Installer
+      - name: Rename Installer and Signature
         working-directory: ${{ github.workspace }}/repository/.build/win32-${{ matrix.arch }}/${{ matrix.target }}-setup
-        run: mv Codingle.exe windows-${{ matrix.arch }}-${{ matrix.target }}.exe
+        run: |
+          mv Codingle.exe windows-${{ matrix.arch }}-${{ matrix.target }}.exe
+          mv Codingle.exe.sig windows-${{ matrix.arch }}-${{ matrix.target }}.exe.sig
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ github.workspace }}/repository/.build/win32-${{ matrix.arch }}/${{ matrix.target }}-setup/windows-${{ matrix.arch }}-${{ matrix.target }}.exe
+          files: |
+            ${{ github.workspace }}/repository/.build/win32-${{ matrix.arch }}/${{ matrix.target }}-setup/windows-${{ matrix.arch }}-${{ matrix.target }}.exe
+            ${{ github.workspace }}/repository/.build/win32-${{ matrix.arch }}/${{ matrix.target }}-setup/windows-${{ matrix.arch }}-${{ matrix.target }}.exe.sig
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
