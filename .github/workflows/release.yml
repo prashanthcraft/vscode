@@ -90,7 +90,7 @@ jobs:
 
       - name: Package Application for Distribution
         working-directory: ./VSCode-darwin-${{ matrix.arch }}
-        run: ditto -c -k --sequesterRsrc --keepParent "Flexpilot.app" "macos-${{ matrix.arch }}-app.zip"
+        run: ditto -c -k --sequesterRsrc --keepParent "Codingle.app" "macos-${{ matrix.arch }}-app.zip"
 
       - name: Notarize Application for macOS
         working-directory: ./VSCode-darwin-${{ matrix.arch }}
@@ -98,7 +98,7 @@ jobs:
 
       - name: Staple Notarization to Application
         working-directory: ./VSCode-darwin-${{ matrix.arch }}
-        run: xcrun stapler staple "Flexpilot.app"
+        run: xcrun stapler staple "Codingle.app"
 
       - name: Upload Application Artifact
         uses: actions/upload-artifact@v4
