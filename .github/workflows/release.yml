@@ -93,9 +93,79 @@ jobs:
         working-directory: ./VSCode-darwin-${{ matrix.arch }}
         run: ditto -c -k --sequesterRsrc --keepParent "Codingle.app" "macos-${{ matrix.arch }}-app.zip"
 
-      - name: Notarize Application for macOS
+      - name: Install macOS Build Dependencies
+        run: |
+          brew install jq # Ensure jq is available for parsing notarytool output
+
+      - name: Submit Application for Notarization
+        id: notarize_submit
         working-directory: ./VSCode-darwin-${{ matrix.arch }}
-        run: xcrun notarytool submit --output-format "json" --wait --apple-id "${{ secrets.APPLE_ID }}" --team-id "${{ secrets.APPLE_TEAM_ID }}" --password "${{ secrets.APPLE_APP_PASSWORD }}" "macos-${{ matrix.arch }}-app.zip"
+        run: |
+          echo "Submitting for notarization..."
+          SUBMISSION_OUTPUT=$(xcrun notarytool submit "macos-${{ matrix.arch }}-app.zip" \
+            --apple-id "${{ secrets.MACOS_NOTARIZATION_APPLE_ID }}" \
+            --team-id "${{ secrets.MACOS_NOTARIZATION_TEAM_ID }}" \
+            --password "${{ secrets.MACOS_NOTARIZATION_APP_PASSWORD }}" \
+            --output-format json)
+
+          echo "Submission output: $SUBMISSION_OUTPUT"
+          REQUEST_UUID=$(echo "$SUBMISSION_OUTPUT" | jq -r '.id')
+
+          if [ -z "$REQUEST_UUID" ] || [ "$REQUEST_UUID" == "null" ]; then
+            echo "Failed to get submission UUID."
+            echo "Full notarytool output:"
+            echo "$SUBMISSION_OUTPUT"
+            exit 1
+          fi
+          echo "REQUEST_UUID=$REQUEST_UUID" >> $GITHUB_ENV
+          echo "::set-output name=request_uuid::$REQUEST_UUID"
+
+      - name: Wait for Notarization
+        working-directory: ./VSCode-darwin-${{ matrix.arch }}
+        run: |
+          echo "Waiting for notarization of request: ${{ env.REQUEST_UUID }}"
+          MAX_CHECKS=180 # 180 checks * 30 seconds = 90 minutes, adjust as needed
+          COUNT=0
+          while [ $COUNT -lt $MAX_CHECKS ]; do
+            echo "Checking notarization status (attempt $((COUNT+1)))..."
+            STATUS_OUTPUT=$(xcrun notarytool info "${{ env.REQUEST_UUID }}" \
+              --apple-id "${{ secrets.MACOS_NOTARIZATION_APPLE_ID }}" \
+              --team-id "${{ secrets.MACOS_NOTARIZATION_TEAM_ID }}" \
+              --password "${{ secrets.MACOS_NOTARIZATION_APP_PASSWORD }}" \
+              --output-format json)
+
+            echo "Status output: $STATUS_OUTPUT"
+            STATUS=$(echo "$STATUS_OUTPUT" | jq -r '.status')
+
+            if [ "$STATUS" == "Accepted" ]; then
+              echo "Notarization successful!"
+              LOG_URL=$(echo "$STATUS_OUTPUT" | jq -r '.logFileUrl')
+              if [ "$LOG_URL" != "null" ] && [ ! -z "$LOG_URL" ]; then
+                echo "Notarization log available at: $LOG_URL"
+                # Consider downloading the log: curl -L -o notarization_log.json "$LOG_URL"
+              fi
+              exit 0
+            elif [ "$STATUS" == "Rejected" ] || [ "$STATUS" == "Invalid" ]; then
+              echo "Notarization failed with status: $STATUS"
+              LOG_URL=$(echo "$STATUS_OUTPUT" | jq -r '.logFileUrl')
+              if [ "$LOG_URL" != "null" ] && [ ! -z "$LOG_URL" ]; then
+                echo "Notarization log available at: $LOG_URL"
+                echo "Attempting to download log..."
+                curl -L -o notarization_log.json "$LOG_URL"
+                echo "Log content (first 50 lines):"
+                head -n 50 notarization_log.json
+              else
+                echo "No log file URL provided in status output."
+              fi
+              exit 1
+            fi
+
+            echo "Current status: $STATUS. Waiting 30 seconds..."
+            sleep 30
+            COUNT=$((COUNT+1))
+          done
+          echo "Timed out waiting for notarization after $MAX_CHECKS checks."
+          exit 1
 
       - name: Staple Notarization to Application
         working-directory: ./VSCode-darwin-${{ matrix.arch }}
