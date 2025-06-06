@@ -3,20 +3,9 @@ name: Product Release Workflow
 on:
   release:
     types: [created]
-  workflow_dispatch:
-    inputs:
-      release_tag:
-        description: 'Release tag to build'
-        required: true
-        type: string
-      release_notes:
-        description: 'Release notes'
-        required: false
-        type: string
 
 permissions:
   contents: write
-  id-token: write
 
 jobs:
   macos_build:
@@ -93,79 +82,9 @@ jobs:
         working-directory: ./VSCode-darwin-${{ matrix.arch }}
         run: ditto -c -k --sequesterRsrc --keepParent "Codingle.app" "macos-${{ matrix.arch }}-app.zip"
 
-      - name: Install macOS Build Dependencies
-        run: |
-          brew install jq # Ensure jq is available for parsing notarytool output
-
-      - name: Submit Application for Notarization
-        id: notarize_submit
+      - name: Notarize Application for macOS
         working-directory: ./VSCode-darwin-${{ matrix.arch }}
-        run: |
-          echo "Submitting for notarization..."
-          SUBMISSION_OUTPUT=$(xcrun notarytool submit "macos-${{ matrix.arch }}-app.zip" \
-            --apple-id "${{ secrets.MACOS_NOTARIZATION_APPLE_ID }}" \
-            --team-id "${{ secrets.MACOS_NOTARIZATION_TEAM_ID }}" \
-            --password "${{ secrets.MACOS_NOTARIZATION_APP_PASSWORD }}" \
-            --output-format json)
-
-          echo "Submission output: $SUBMISSION_OUTPUT"
-          REQUEST_UUID=$(echo "$SUBMISSION_OUTPUT" | jq -r '.id')
-
-          if [ -z "$REQUEST_UUID" ] || [ "$REQUEST_UUID" == "null" ]; then
-            echo "Failed to get submission UUID."
-            echo "Full notarytool output:"
-            echo "$SUBMISSION_OUTPUT"
-            exit 1
-          fi
-          echo "REQUEST_UUID=$REQUEST_UUID" >> $GITHUB_ENV
-          echo "::set-output name=request_uuid::$REQUEST_UUID"
-
-      - name: Wait for Notarization
-        working-directory: ./VSCode-darwin-${{ matrix.arch }}
-        run: |
-          echo "Waiting for notarization of request: ${{ env.REQUEST_UUID }}"
-          MAX_CHECKS=180 # 180 checks * 30 seconds = 90 minutes, adjust as needed
-          COUNT=0
-          while [ $COUNT -lt $MAX_CHECKS ]; do
-            echo "Checking notarization status (attempt $((COUNT+1)))..."
-            STATUS_OUTPUT=$(xcrun notarytool info "${{ env.REQUEST_UUID }}" \
-              --apple-id "${{ secrets.MACOS_NOTARIZATION_APPLE_ID }}" \
-              --team-id "${{ secrets.MACOS_NOTARIZATION_TEAM_ID }}" \
-              --password "${{ secrets.MACOS_NOTARIZATION_APP_PASSWORD }}" \
-              --output-format json)
-
-            echo "Status output: $STATUS_OUTPUT"
-            STATUS=$(echo "$STATUS_OUTPUT" | jq -r '.status')
-
-            if [ "$STATUS" == "Accepted" ]; then
-              echo "Notarization successful!"
-              LOG_URL=$(echo "$STATUS_OUTPUT" | jq -r '.logFileUrl')
-              if [ "$LOG_URL" != "null" ] && [ ! -z "$LOG_URL" ]; then
-                echo "Notarization log available at: $LOG_URL"
-                # Consider downloading the log: curl -L -o notarization_log.json "$LOG_URL"
-              fi
-              exit 0
-            elif [ "$STATUS" == "Rejected" ] || [ "$STATUS" == "Invalid" ]; then
-              echo "Notarization failed with status: $STATUS"
-              LOG_URL=$(echo "$STATUS_OUTPUT" | jq -r '.logFileUrl')
-              if [ "$LOG_URL" != "null" ] && [ ! -z "$LOG_URL" ]; then
-                echo "Notarization log available at: $LOG_URL"
-                echo "Attempting to download log..."
-                curl -L -o notarization_log.json "$LOG_URL"
-                echo "Log content (first 50 lines):"
-                head -n 50 notarization_log.json
-              else
-                echo "No log file URL provided in status output."
-              fi
-              exit 1
-            fi
-
-            echo "Current status: $STATUS. Waiting 30 seconds..."
-            sleep 30
-            COUNT=$((COUNT+1))
-          done
-          echo "Timed out waiting for notarization after $MAX_CHECKS checks."
-          exit 1
+        run: xcrun notarytool submit --output-format "json" --wait --apple-id "${{ secrets.APPLE_ID }}" --team-id "${{ secrets.APPLE_TEAM_ID }}" --password "${{ secrets.APPLE_APP_PASSWORD }}" "macos-${{ matrix.arch }}-app.zip"
 
       - name: Staple Notarization to Application
         working-directory: ./VSCode-darwin-${{ matrix.arch }}
@@ -188,7 +107,6 @@ jobs:
     runs-on: ${{ matrix.runner }}
     environment: production
     name: "Release for Linux"
-    timeout-minutes: 60
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     strategy:
@@ -204,22 +122,11 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: 'repository'
-          ref: ${{ github.event.inputs.release_tag || github.event.release.tag_name }}
-
-      - name: Cache Node modules
-        uses: actions/cache@v3
-        with:
-          path: repository/node_modules
-          key: ${{ runner.os }}-${{ runner.arch }}-node-${{ hashFiles('repository/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ runner.arch }}-node-
 
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: 'npm'
-          cache-dependency-path: 'repository/package-lock.json'
 
       - name: Install Python
         uses: actions/setup-python@v5
@@ -229,10 +136,10 @@ jobs:
       - name: Install Linux Build Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential g++ libx11-dev libxkbfile-dev libsecret-1-dev libkrb5-dev python-is-python3 fakeroot rpm libcups2-dev
+          sudo apt-get install build-essential g++ libx11-dev libxkbfile-dev libsecret-1-dev libkrb5-dev python-is-python3 fakeroot rpm
 
       - name: Install Project Dependencies
-        working-directory: ${{ github.workspace }}/repository
+        working-directory: ./repository
         run: npm install
 
       - name: Build Codingle Executables
@@ -284,46 +191,27 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Cleanup Temporary Files
-        if: always()
-        run: |
-          rm -rf "${{ github.workspace }}/repository/.build"
-          rm -rf "${{ github.workspace }}/repository/node_modules"
-
-  windows_build:
+  windows-build:
     runs-on: 'windows-latest'
     environment: production
     name: "Release for Windows"
-    timeout-minutes: 60
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      npm_config_arch: ${{ matrix.arch == 'x64' && 'x64' || 'arm64' }}
     strategy:
       fail-fast: false
       matrix:
         target: [user, system]
         arch: [x64, arm64]
+    env:
+      npm_config_arch: ${{ matrix.arch == 'x64' && 'x64' || 'arm64' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           path: 'repository'
-          ref: ${{ github.event.inputs.release_tag || github.event.release.tag_name }}
-
-      - name: Cache Node modules
-        uses: actions/cache@v3
-        with:
-          path: repository/node_modules
-          key: ${{ runner.os }}-${{ matrix.arch }}-node-${{ hashFiles('repository/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.arch }}-node-
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: 'npm'
-          cache-dependency-path: 'repository/package-lock.json'
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -334,7 +222,7 @@ jobs:
         uses: sigstore/cosign-installer@v3.5.0
 
       - name: Install dependencies
-        working-directory: ${{ github.workspace }}/repository
+        working-directory: .\repository
         run: npm install
 
       - name: Build Executables
@@ -370,21 +258,11 @@ jobs:
 
       - name: Rename Installer and Signature
         working-directory: ${{ github.workspace }}/repository/.build/win32-${{ matrix.arch }}/${{ matrix.target }}-setup
-        run: |
-          mv Codingle.exe windows-${{ matrix.arch }}-${{ matrix.target }}.exe
-          mv Codingle.exe.sig windows-${{ matrix.arch }}-${{ matrix.target }}.exe.sig
+        run: mv Codingle.exe windows-${{ matrix.arch }}-${{ matrix.target }}.exe
 
       - name: Upload Release Assets
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            ${{ github.workspace }}/repository/.build/win32-${{ matrix.arch }}/${{ matrix.target }}-setup/windows-${{ matrix.arch }}-${{ matrix.target }}.exe
-            ${{ github.workspace }}/repository/.build/win32-${{ matrix.arch }}/${{ matrix.target }}-setup/windows-${{ matrix.arch }}-${{ matrix.target }}.exe.sig
+          files: ${{ github.workspace }}/repository/.build/win32-${{ matrix.arch }}/${{ matrix.target }}-setup/windows-${{ matrix.arch }}-${{ matrix.target }}.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Cleanup Temporary Files
-        if: always()
-        run: |
-          Remove-Item -Path "${{ github.workspace }}/repository/.build" -Recurse -Force -ErrorAction SilentlyContinue
-          Remove-Item -Path "${{ github.workspace }}/repository/node_modules" -Recurse -Force -ErrorAction SilentlyContinue
