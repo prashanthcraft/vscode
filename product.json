@@ -27,7 +27,7 @@
 	"darwinBundleIdentifier": "ai.codingle.ide",
 	"darwinProfileUUID": "47827DD9-4734-49A0-AF80-7E19B11495CC",
 	"darwinProfilePayloadUUID": "CF808BE7-53F3-46C6-A7E2-7EDB98A5E959",
-	"linuxIconName": "codingle",
+	"linuxIconName": "code-oss",
 	"licenseFileName": "LICENSE.txt",
 	"reportIssueUrl": "https://github.com/prashanthcraft/codingle-ide/issues/new",
 	"nodejsRepository": "https://nodejs.org",
